@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Holiday Hub</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+
+    <header>
+        <h1>My Holidays</h1>
+        <button id="add-booking-btn" class="primary-btn">+ Add Booking</button>
+    </header>
+
+    <main id="holidays-container"></main>
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-modal">&times;</span>
+            <h2 id="modal-title">Add New Booking</h2>
+
+            <div class="tab-container">
+                <button class="tab-btn active" id="tab-ai">Magic AI</button>
+                <button class="tab-btn" id="tab-manual">Manual</button>
+            </div>
+
+            <form id="form-ai" class="booking-form active" style="position: relative;">
+                <p class="form-help">Paste your booking confirmation email below. Our AI will extract the dates, times, and locations automatically.</p>
+                <textarea id="ai-email-text" rows="8" placeholder="Paste your email text here..." required></textarea>
+                <button type="submit" class="primary-btn full-width">✨ Extract & Save</button>
+
+                <div id="ai-loading-overlay" class="ai-loading-overlay">
+                    <div class="futuristic-spinner"></div>
+                    <div class="ai-loading-text">Gemini is thinking...</div>
+                </div>
+            </form>
+
+            <form id="form-manual" class="booking-form">
+                <p class="form-help">Build your itinerary block by block.</p>
+                
+                <input type="hidden" id="manual-holiday-id" value="">
+                
+                <label>Holiday Name (e.g., Spring in Paris)</label>
+                <input type="text" id="manual-holiday" required>
+
+                <div class="dynamic-section">
+                    <div class="section-header">
+                        <h3>Flights ✈️</h3>
+                        <button type="button" id="add-flight-btn" class="secondary-btn">+ Add Flight</button>
+                    </div>
+                    <div id="flights-container"></div>
+                </div>
+
+                <div class="dynamic-section">
+                    <div class="section-header">
+                        <h3>Hotels 🏨</h3>
+                        <button type="button" id="add-hotel-btn" class="secondary-btn">+ Add Hotel</button>
+                    </div>
+                    <div id="hotels-container"></div>
+                </div>
+
+                <datalist id="airlines-list">
+                    <option value="Ryanair"></option>
+                    <option value="Aer Lingus"></option>
+                    <option value="British Airways"></option>
+                    <option value="Emirates"></option>
+                    <option value="Delta Airlines"></option>
+                    <option value="American Airlines"></option>
+                    <option value="United Airlines"></option>
+                    <option value="Lufthansa"></option>
+                    <option value="Air France"></option>
+                    <option value="KLM"></option>
+                </datalist>
+
+                <datalist id="airports-list">
+                    <option value="Dublin"></option>
+                    <option value="London"></option>
+                    <option value="New York"></option>
+                    <option value="Paris"></option>
+                    <option value="Dubai"></option>
+                    <option value="Barcelona"></option>
+                    <option value="Amsterdam"></option>
+                    <option value="Rome"></option>
+                    <option value="Milan"></option>
+                    <option value="Berlin"></option>
+                    <option value="Manchester"></option>
+                    <option value="Liverpool"></option>
+                    <option value="Athens"></option>
+                    <option value="Lisbon"></option>
+                    <option value="Reus"></option>
+                </datalist>
+
+                <button type="submit" class="primary-btn full-width">Save Holiday</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <h2 style="color: #ff4d4d; margin-top: 0;">🗑️ Delete Holiday?</h2>
+            <p style="margin: 15px 0 25px 0;">Are you sure you want to delete this entire holiday? This cannot be undone.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="button" id="confirm-cancel-btn" class="secondary-btn" style="flex: 1; border-color: #ddd; color: #666; padding: 12px;">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="primary-btn" style="flex: 1; background: #ff4d4d; padding: 12px;">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+    </script>
+</body>
+</html>

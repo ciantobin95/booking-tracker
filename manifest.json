@@ -1,0 +1,21 @@
+{
+  "name": "My Holiday Hub",
+  "short_name": "Holidays",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#4CAF50",
+  "description": "Consolidate all your holiday bookings in one place.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "350x350",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "350x350",
+      "type": "image/png"
+    }
+  ]
+}
