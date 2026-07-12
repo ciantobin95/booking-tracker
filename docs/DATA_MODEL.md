@@ -52,7 +52,8 @@ trip creates one document per flight leg, both sharing `confirmationCode`).
 | `gmailThreadId` | string \| null | |
 | `notes` | string | free text, editable in the app |
 | `history` | array | `{ at: ISO timestamp, note: string }` appended on every automated create/update/cancel |
-| `createdAt` / `updatedAt` | timestamp | server timestamps |
+| `parseFingerprint` | string | scanner-internal: hash of the last-ingested email content, used to tell "same email re-delivered" (skip, preserving user edits) from "genuine modification" (merge + history note). Absent on manual entries. |
+| `createdAt` / `updatedAt` | timestamp | ISO timestamps (set by the scanner) or server timestamps (set by the app) |
 
 Dates and times are stored as plain local strings on purpose: flight times are
 always displayed in each airport's local time exactly as the airline stated
