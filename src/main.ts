@@ -1,6 +1,6 @@
 import './style.css';
 import { isFirebaseConfigured } from './firebase-config';
-import { signInWithGoogle, watchAuth } from './firebase';
+import { signInWithGoogle, useEmulators, watchAuth } from './firebase';
 
 const app = document.getElementById('app')!;
 
@@ -40,7 +40,7 @@ function renderLoading(): void {
 }
 
 async function boot(): Promise<void> {
-  if (!isFirebaseConfigured()) {
+  if (!useEmulators && !isFirebaseConfigured()) {
     renderSetupRequired();
     return;
   }

@@ -26,12 +26,19 @@ let authInstance: Auth | null = null;
 let dbInstance: Firestore | null = null;
 
 // Set VITE_EMULATORS=1 to run against local Firebase emulators (used by the
-// automated smoke tests; never set in production builds).
-const useEmulators = import.meta.env.VITE_EMULATORS === '1';
+// automated smoke tests; never set in production builds). In emulator mode a
+// fixed demo config is used, so no real Firebase project is needed.
+export const useEmulators = import.meta.env.VITE_EMULATORS === '1';
+
+const demoConfig = {
+  apiKey: 'demo-api-key',
+  authDomain: 'demo-booking.firebaseapp.com',
+  projectId: 'demo-booking',
+};
 
 function ensureApp(): FirebaseApp {
   if (!app) {
-    app = initializeApp(firebaseConfig);
+    app = initializeApp(useEmulators ? demoConfig : firebaseConfig);
   }
   return app;
 }
