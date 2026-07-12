@@ -1,0 +1,14 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.boot-message {
+  padding: 2rem;
+  text-align: center;
+  color: #5f6368;
+}
