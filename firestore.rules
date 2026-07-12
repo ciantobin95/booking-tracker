@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user can only touch documents under their own uid.
+    // The Gmail-scanner Apps Script is unaffected by these rules: it writes
+    // through the Firestore REST API with the project owner's IAM access.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

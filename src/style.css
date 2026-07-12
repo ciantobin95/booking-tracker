@@ -1,14 +1,76 @@
 :root {
   color-scheme: light;
+  --accent: #1a73e8;
+  --accent-soft: #e8f0fe;
+  --text: #202124;
+  --text-muted: #5f6368;
+  --surface: #ffffff;
+  --surface-alt: #f8f9fa;
+  --border: #dadce0;
+  --danger: #d93025;
+  --warn: #f9ab00;
+  --warn-soft: #fef7e0;
+  --ok: #188038;
+  --flight: #1a73e8;
+  --stay: #188038;
+  --car: #9334e6;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--surface-alt);
 }
 
-.boot-message {
-  padding: 2rem;
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.centered-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
   text-align: center;
-  color: #5f6368;
+}
+
+.centered-screen h1 {
+  margin: 0;
+}
+
+.centered-screen p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 32rem;
+}
+
+.error-text {
+  color: var(--danger) !important;
+}
+
+.primary-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+}
+
+.secondary-btn {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
 }
