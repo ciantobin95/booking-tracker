@@ -1,6 +1,9 @@
+import { registerSW } from 'virtual:pwa-register';
 import './style.css';
 import { isFirebaseConfigured } from './firebase-config';
 import { signInWithGoogle, useEmulators, watchAuth } from './firebase';
+
+registerSW({ immediate: true });
 
 const app = document.getElementById('app')!;
 

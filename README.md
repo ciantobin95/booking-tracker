@@ -47,6 +47,19 @@ npm run dev
 
 `npm run build` type-checks and produces the static site in `dist/`.
 
+## Testing
+
+An end-to-end smoke test (sign-in, adding/editing bookings, calendar
+rendering, needs-review flow) runs against the Firebase emulators:
+
+```
+npx firebase emulators:start --only auth,firestore --project demo-booking
+npm run test:e2e
+```
+
+(Requires `firebase-tools` and Java for the Firestore emulator. The app
+connects to the emulators when built with `VITE_EMULATORS=1`.)
+
 ## Deployment
 
 Every push to `main` builds and deploys to GitHub Pages via GitHub Actions.
