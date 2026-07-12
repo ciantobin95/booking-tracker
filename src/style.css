@@ -461,3 +461,248 @@ button {
   font-weight: 600;
   color: var(--accent);
 }
+
+/* --------------------------------------------------------- fab & badges */
+
+.fab {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+  z-index: 10;
+}
+
+.badge {
+  display: inline-block;
+  min-width: 1.2rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--warn);
+  color: #3d2e00;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ------------------------------------------------------ dialogs & forms */
+
+.sheet-dialog {
+  border: none;
+  border-radius: 1rem 1rem 0 0;
+  padding: 0;
+  width: 100%;
+  max-width: 40rem;
+  margin: auto auto 0;
+  max-height: 88dvh;
+  box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 40rem) {
+  .sheet-dialog {
+    border-radius: 1rem;
+    margin: auto;
+  }
+}
+
+.sheet-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem calc(1.25rem + env(safe-area-inset-bottom));
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.type-switch {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.type-tab {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.type-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.form-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-fields input,
+.form-fields textarea,
+.form-fields select {
+  font: inherit;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--surface);
+  width: 100%;
+}
+
+.form-fields input:focus,
+.form-fields textarea:focus,
+.form-fields select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.check-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+}
+
+.check-label input {
+  width: auto !important;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.form-actions .primary-btn {
+  margin-left: auto;
+}
+
+.danger-btn {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------- review list */
+
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.review-jump {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0;
+}
+
+.review-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.review-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------- settings */
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.settings-line {
+  margin: 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.uid-value {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.settings-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

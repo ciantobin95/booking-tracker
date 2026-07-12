@@ -1,6 +1,7 @@
 import type { User } from 'firebase/auth';
 import type { Unsubscribe } from 'firebase/firestore';
-import { watchBookings } from '../db';
+import { deleteBooking, saveBooking, watchBookings } from '../db';
+import { signOutUser } from '../firebase';
 import {
   buildOccupancy,
   fromDateKey,
@@ -9,7 +10,10 @@ import {
 } from '../model';
 import { monthLabel, renderCalendar } from './calendar';
 import { renderDayPanel } from './dayDetail';
+import { openBookingForm } from './forms';
 import { esc } from './html';
+import { openReviewList, reviewCount } from './review';
+import { openSettings } from './settings';
 
 interface AppState {
   bookings: Booking[];
@@ -36,7 +40,8 @@ export function renderApp(root: HTMLElement, user: User): void {
       <header class="app-header">
         <span class="app-title">Booking Tracker</span>
         <div class="header-actions">
-          <button type="button" id="sign-out-btn" class="icon-btn" title="Sign out">Sign out</button>
+          <button type="button" id="review-btn" class="icon-btn" hidden>Review <span class="badge"></span></button>
+          <button type="button" id="settings-btn" class="icon-btn" title="Settings">⚙︎</button>
         </div>
       </header>
       <div id="sync-banner" class="sync-banner" hidden></div>
@@ -49,30 +54,50 @@ export function renderApp(root: HTMLElement, user: User): void {
         <section id="calendar" class="calendar"></section>
         <section id="day-panel" class="day-panel"></section>
       </main>
+      <button type="button" id="add-fab" class="fab" aria-label="Add booking">＋</button>
     </div>`;
 
   const calendarEl = root.querySelector<HTMLElement>('#calendar')!;
   const dayPanelEl = root.querySelector<HTMLElement>('#day-panel')!;
   const monthLabelEl = root.querySelector<HTMLButtonElement>('#month-label')!;
   const syncBanner = root.querySelector<HTMLElement>('#sync-banner')!;
+  const reviewBtn = root.querySelector<HTMLButtonElement>('#review-btn')!;
+
+  function goToDay(dateKey: string): void {
+    state.selectedDate = dateKey;
+    const d = fromDateKey(dateKey);
+    state.year = d.getFullYear();
+    state.month = d.getMonth();
+    rerender();
+  }
+
+  function editBooking(booking: Booking): void {
+    openBookingForm({
+      booking,
+      defaultDate: state.selectedDate,
+      onSave: async (b) => {
+        await saveBooking(user.uid, b);
+      },
+      onDelete: async (b) => {
+        await deleteBooking(user.uid, b.id);
+      },
+    });
+  }
 
   function rerender(): void {
     monthLabelEl.textContent = monthLabel(state.year, state.month);
     const occupancy = buildOccupancy(state.bookings);
     renderCalendar(calendarEl, state.year, state.month, occupancy, state.selectedDate, {
-      onSelectDay: (dateKey) => {
-        state.selectedDate = dateKey;
-        const d = fromDateKey(dateKey);
-        state.year = d.getFullYear();
-        state.month = d.getMonth();
-        rerender();
-      },
+      onSelectDay: goToDay,
     });
     renderDayPanel(dayPanelEl, state.selectedDate, state.bookings, {
-      onEdit: () => {
-        /* editing arrives with the add/edit forms phase */
-      },
+      onEdit: editBooking,
     });
+
+    const pending = reviewCount(state.bookings);
+    reviewBtn.hidden = pending === 0;
+    reviewBtn.querySelector('.badge')!.textContent = String(pending);
+
     if (state.syncError) {
       syncBanner.hidden = false;
       syncBanner.innerHTML = `Sync problem: ${esc(state.syncError)}`;
@@ -97,18 +122,32 @@ export function renderApp(root: HTMLElement, user: User): void {
     }
     rerender();
   });
-  monthLabelEl.addEventListener('click', () => {
-    const now = fromDateKey(todayKey());
-    state.year = now.getFullYear();
-    state.month = now.getMonth();
-    state.selectedDate = todayKey();
-    rerender();
+  monthLabelEl.addEventListener('click', () => goToDay(todayKey()));
+
+  root.querySelector('#add-fab')!.addEventListener('click', () => {
+    openBookingForm({
+      defaultDate: state.selectedDate,
+      onSave: async (b) => {
+        await saveBooking(user.uid, b);
+      },
+    });
   });
-  root.querySelector('#sign-out-btn')!.addEventListener('click', async () => {
-    unsubscribe?.();
-    unsubscribe = null;
-    const { signOutUser } = await import('../firebase');
-    await signOutUser();
+
+  reviewBtn.addEventListener('click', () => {
+    openReviewList(state.bookings, {
+      onEdit: editBooking,
+      onJumpToDay: goToDay,
+    });
+  });
+
+  root.querySelector('#settings-btn')!.addEventListener('click', () => {
+    openSettings(user, {
+      onSignOut: async () => {
+        unsubscribe?.();
+        unsubscribe = null;
+        await signOutUser();
+      },
+    });
   });
 
   unsubscribe?.();
