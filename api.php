@@ -1,6 +1,75 @@
 <?php
 // Hide PHP warnings so they don't break our JSON output
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+function booking_tracker_key_usable(string $value): bool {
+    $value = trim($value);
+    if ($value === '') {
+        return false;
+    }
+    $placeholders = [
+        'your-gemini-api-key-here',
+        'YOUR_GEMINI_API_KEY',
+    ];
+    return !in_array($value, $placeholders, true);
+}
+
+function booking_tracker_env_value(string $name): string {
+    $candidates = [];
+    $fromGetenv = getenv($name);
+    if (is_string($fromGetenv)) {
+        $candidates[] = $fromGetenv;
+    }
+    if (isset($_ENV[$name]) && is_string($_ENV[$name])) {
+        $candidates[] = $_ENV[$name];
+    }
+    if (isset($_SERVER[$name]) && is_string($_SERVER[$name])) {
+        $candidates[] = $_SERVER[$name];
+    }
+    foreach ($candidates as $value) {
+        if (booking_tracker_key_usable($value)) {
+            return trim($value);
+        }
+    }
+    return '';
+}
+
+function booking_tracker_gemini_api_key(): string {
+    $fromEnv = booking_tracker_env_value('GEMINI_API_KEY');
+    if ($fromEnv !== '') {
+        return $fromEnv;
+    }
+
+    $localConfig = __DIR__ . '/config.local.php';
+    if (!is_file($localConfig)) {
+        return '';
+    }
+
+    ob_start();
+    try {
+        $config = include $localConfig;
+    } catch (Throwable $e) {
+        $config = null;
+        error_log('extract_ai: config.local.php could not be loaded.');
+    }
+    ob_end_clean();
+
+    if (!is_array($config) || !isset($config['GEMINI_API_KEY']) || !is_string($config['GEMINI_API_KEY'])) {
+        return '';
+    }
+
+    $fromFile = trim($config['GEMINI_API_KEY']);
+    return booking_tracker_key_usable($fromFile) ? $fromFile : '';
+}
+
+function booking_tracker_redact(string $text, string $secret): string {
+    if ($secret === '') {
+        return $text;
+    }
+    return str_replace($secret, '[redacted]', $text);
+}
 
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
@@ -115,8 +184,13 @@ try {
     if ($action === 'extract_ai' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
-        
-        $apiKey = 'AIzaSyDNLYnY0mx8Lwi-keuwrgm2WHRSFYXMeQ4'; 
+
+        $apiKey = booking_tracker_gemini_api_key();
+        if ($apiKey === '') {
+            error_log('extract_ai refused: GEMINI_API_KEY is not configured.');
+            echo json_encode(["status" => "error", "message" => "The AI service is temporarily unavailable."]);
+            exit;
+        }
 
         $prompt = "You are a travel parsing API. I will give you a raw booking email and a JSON list of my existing trips.
         1. Extract ALL bookings (flights and/or hotels) from the email. Format all dates to YYYY-MM-DD.
@@ -136,8 +210,9 @@ try {
         My Existing Trips: " . json_encode($data['existing_holidays'] ?? []) . "
         Raw Email To Parse: " . ($data['email'] ?? '');
 
-        $geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
-        
+        // Key goes in a header so it is not written into the request URL or access logs.
+        $geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
         $payload = json_encode([
             "contents" => [["parts" => [["text" => $prompt]]]],
             "generationConfig" => ["responseMimeType" => "application/json"]
@@ -145,25 +220,34 @@ try {
 
         $ch = curl_init($geminiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'x-goog-api-key: ' . $apiKey,
+        ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        
+
         $response = curl_exec($ch);
         $err = curl_error($ch);
-        
+        curl_close($ch);
+
         if ($response === false) {
-            echo json_encode(["status" => "error", "message" => "Server cURL Error: " . $err]);
+            error_log('extract_ai Gemini request failed: ' . booking_tracker_redact($err, $apiKey));
+            echo json_encode(["status" => "error", "message" => "The AI service is temporarily unavailable."]);
             exit;
         }
 
         $geminiData = json_decode($response, true);
-        
+
         if (isset($geminiData['error'])) {
-            echo json_encode(["status" => "error", "message" => "Google AI Error: " . $geminiData['error']['message']]);
+            $googleMessage = (string) ($geminiData['error']['message'] ?? 'request rejected');
+            error_log('extract_ai Gemini returned an error: ' . booking_tracker_redact($googleMessage, $apiKey));
+            echo json_encode(["status" => "error", "message" => "Google AI Error: " . booking_tracker_redact($googleMessage, $apiKey)]);
             exit;
         }
 
